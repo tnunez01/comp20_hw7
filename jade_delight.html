@@ -1,0 +1,273 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Jade Delight</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+
+<link rel="icon" href="icon.png" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.min.js"></script>
+<script>
+$(document).ready(function () {
+	var itemTotals = [0,0,0,0,0];
+	var drops = [document.getElementsByName("quan"+0),
+				 document.getElementsByName("quan"+1),
+				 document.getElementsByName("quan"+2),
+				 document.getElementsByName("quan"+3),
+				 document.getElementsByName("quan"+4)];
+
+	$(drops[0]).change(function() {
+		updateItemTotals(drops, itemTotals, 0);
+	});
+	$(drops[1]).change(function() {
+		updateItemTotals(drops, itemTotals, 1);
+	});
+	$(drops[2]).change(function() {
+		updateItemTotals(drops, itemTotals, 2);
+	});
+	$(drops[3]).change(function() {
+		updateItemTotals(drops, itemTotals, 3);
+	});
+	$(drops[4]).change(function() {
+		updateItemTotals(drops, itemTotals, 4);
+	});
+
+	var p = document.forms[0].p_or_d[0];
+	var d = document.forms[0].p_or_d[1];
+	$(".deliver").hide();
+	$(p).click(function () {
+    	$(".deliver").hide();
+	});
+	$(d).click(function () {
+    	$(".deliver").show();
+	});
+	
+  $(document.forms[0]).validate({
+		rules: {
+			lname : {
+				required: true,
+			},
+			phone: {
+				required: true,
+				number: true,
+				minlength: 10
+			},
+			street: {
+				required: {
+					depends: function(element) {
+						return document.getElementsByName('p_or_d')[1].checked;
+					}
+				}
+			},
+			city: {
+				required: {
+					depends: function(element) {
+						return document.getElementsByName('p_or_d')[1].checked;
+					}
+				}
+			}
+		},
+    submitHandler: function(label) {
+  	  var date = new Date();
+      var timeString;
+      if (document.getElementsByName('p_or_d')[1].checked) {
+        timeString = "Expected Delivery Time: ";
+        date.setMinutes(date.getMinutes() + 30);
+      } else {
+        timeString = "Expected Pickup Time: ";
+        date.setMinutes(date.getMinutes() + 15);
+      }
+      var actualMin = date.getMinutes();
+      if (actualMin < 10)
+        actualMin = "0" + actualMin;
+	    document.getElementById("expectedT").innerHTML = timeString
+											                                + date.getHours() + ":"
+											                                + actualMin;
+      var numString, quanString, costString;
+      for (i = 0; i < menuItems.length; i++) {
+        numString = "num" + i;
+        quanString = "quan" + i;
+        costString = "cost" + i;
+        document.getElementById(numString).innerHTML = document.getElementsByName(quanString)[0].selectedIndex;
+        document.getElementById(costString).innerHTML = itemTotals[i].toFixed(2);
+      }
+      document.getElementById("subTot").innerHTML = document.getElementById("subtotal").value;
+      document.getElementById("otherTax").innerHTML = document.getElementById("tax").value;
+      document.getElementById("tot").innerHTML = document.getElementById("total").value;
+	    var newWindowContent = document.getElementById('summary').innerHTML;
+      var newWindow = window.open("", "","width=500,height=500");
+      newWindow.document.write(newWindowContent);
+    }
+	});
+});
+
+function updateItemTotals(dropItems, totalArr, itemIndex) {
+	var thisDrop = dropItems[itemIndex];
+
+	totalArr[itemIndex] = menuItems[itemIndex].cost * thisDrop[0].selectedIndex;
+	document.forms[0].cost[itemIndex].value = totalArr[itemIndex].toFixed(2);
+	updateTotalsnTax(totalArr);
+}
+
+function updateTotalsnTax(allPrices) {
+	var MA_TAX = .0625;
+	var sub = 0, orderTax, grand;
+	for (i = 0; i < allPrices.length; i++) {
+		sub += allPrices[i];
+	}
+	document.getElementById("subtotal").value = sub.toFixed(2);
+
+	orderTax = sub * MA_TAX;
+	document.getElementById("tax").value = orderTax.toFixed(2);
+
+	grand = sub + orderTax;
+	document.getElementById("total").value = grand.toFixed(2);
+}
+</script>
+<style type="text/css">
+body {
+	background-image: url("jade.jpg");
+	background-size: cover;
+	font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 
+               'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  background-repeat: no-repeat;
+}
+h1 {
+	padding-top: 10px;
+	color: #ffffff;
+  text-align: center;
+}
+form {
+	background-color: #ffffffdc;
+	padding-top: 10px;
+	padding-bottom: 10px;
+  padding-left: 20px;
+}
+.error {
+	color: #ff0000;
+}
+</style>
+
+</head>
+
+<body>
+<script language="javascript">
+
+function MenuItem(name, cost)
+{
+	this.name = name;
+	this.cost=cost;
+}
+
+menuItems = new Array(
+	new MenuItem("Chicken Chop Suey", 4.5),
+	new MenuItem("Sweet and Sour Pork", 6.25),
+	new MenuItem("Shrimp Lo Mein", 5.25),
+	new MenuItem("Moo Shi Chicken", 6.5),
+	new MenuItem("Fried Rice", 2.35)
+);
+
+function makeSelect(name, minRange, maxRange)
+{
+	var t= "";
+	t = "<select name='" + name + "' size='1'>";
+	for (j=minRange; j<=maxRange; j++)
+	   t += "<option>" + j + "</option>";
+	t+= "</select>"; 
+	return t;
+}
+</script>
+
+<h1>Jade Delight</h1>
+<form>
+
+<p>First Name: <input type="text"  name='fname' /></p>
+<p>Last Name*:  <input type="text"  name='lname' /></p>
+<p class="deliver">Street: <input type="text"  name='street' /></p>
+<p class="deliver">City: <input type="text"  name='city' /></p>
+<p>Phone*: <input type="text"  name='phone' /></p>
+<p> 
+	<input type="radio"  name="p_or_d" value = "pickup" checked="checked"/>Pickup
+	<input type="radio"  name='p_or_d' value = 'delivery'/>
+	Delivery
+</p>
+<table border="0" cellpadding="3">
+  <tr>
+    <th>Select Item</th>
+    <th>Item Name</th>
+    <th>Cost Each</th>
+    <th>Total Cost</th>
+  </tr>
+<script language="javascript">
+
+  var s = "";
+  for (i=0; i< menuItems.length; i++)
+  {
+	  s += "<tr><td>";
+	  s += makeSelect("quan" + i, 0, 10);
+	  s += "</td><td>" + menuItems[i].name + "</td>";
+	  s += "<td> $ " + menuItems[i].cost.toFixed(2) + "</td>";
+	  s += "<td>$<input type='text' name='cost'/></td></tr>";
+  }
+  document.writeln(s);
+</script>
+</table>
+<p>Subtotal: 
+   $<input type="text"  name='subtotal' id="subtotal" />
+</p>
+<p>Mass tax 6.25%:
+  $ <input type="text"  name='tax' id="tax" />
+</p>
+<p>Total: $ <input type="text"  name='total' id="total" />
+</p>
+
+<input type = "submit" value = "Submit Order" />
+
+</form>
+
+<div id="summary" style="display:none; text-align:center">
+  <h1>Receipt</h1>
+  <h3>Thank you for placing an order with Jade Delight!</h3>
+  <p id="expectedT"></p>
+  <table id="receipt">
+    <tr style="text-align: center">
+      <th>Quantity</th>
+      <th>Item Name</th>
+      <th>Cost</th>
+      <th></th>
+    </tr>
+    <script language="javascript">
+      var s = "", quanString = "";
+      for (i = 0; i < menuItems.length; i++) {
+        s += "<tr><td id='num" + i + "' style='text-align:center'>";
+        s += "</td><td style='text-align:left'>" + menuItems[i].name + "</td>";
+        s += "<td id='cost" + i + "' style='text-align:right;padding-left:5px'></td></tr>";
+      }
+      document.write(s);
+    </script>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td style="font-weight: bold;">Subtotal</td>
+      <td id="subTot" style="text-align:right;"></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td style="font-weight: bold;">Tax</td>
+      <td id="otherTax" style="text-align:right;"></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td style="font-weight: bold;">Total</td>
+      <td id="tot" style="text-align:right;"></td>
+    </tr>
+  </table>
+</div>
+
+</body>
+</html>
